@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+codelore-env/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Project specific
+repo_analysis_results.json
+*.mp4
+*.pkl
+**/node_modules/
+**/.cache/
+
+# Testing
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/ 
