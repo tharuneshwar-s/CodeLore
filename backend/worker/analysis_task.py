@@ -16,7 +16,16 @@ logger = logging.getLogger(__name__)
 
 # --- Constants ---
 MAX_FILES_TO_PARSE = 200 # Limit API calls for content
-IMPORTANT_FILES = ["requirements.txt", "Pipfile", "package.json", "Dockerfile", "tsconfig.json", "pyproject.toml", "pom.xml", "build.gradle"] # For framework detection
+IMPORTANT_FILES = [
+    # Python
+    "requirements.txt", "Pipfile", "pyproject.toml",
+    # JavaScript/Node
+    "package.json", "tsconfig.json",
+    # Java
+    "pom.xml", "build.gradle", "settings.gradle", "build.gradle.kts", "gradle.properties", "web.xml",
+    # General
+    "Dockerfile"
+] # For framework detection
 
 # --- Celery Task Definition ---
 print("[WALKTHROUGH] worker/analysis_task.py: Defining Celery task 'run_codelore_analysis'...")
@@ -126,6 +135,7 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         all_imports: Set[str] = set()
         analyzed_files_paths: List[str] = []
         total_py_lines: int = 0
+        total_java_lines: int = 0
         parsed_files_count: int = 0
         file_contents_for_framework_detection: Dict[str, str] = {} # Store content of important files
         
@@ -134,7 +144,7 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             {
                 "repo_url": repo_url,
                 "status": "PENDING",
-                "state": "Analyzing Python files in repository",
+                "state": "Analyzing Python and Java files in repository",
                 "result": None,
                 "progress": 55,
                 "error": None,
@@ -142,9 +152,10 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         python_files_in_tree = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '').endswith('.py')]
+        java_files_in_tree = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '').endswith('.java')]
         other_important_files = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '') in IMPORTANT_FILES]
 
-        print(f"[WALKTHROUGH][TASK {task_id}] Found {len(python_files_in_tree)} Python files and {len(other_important_files)} other important files.")
+        print(f"[WALKTHROUGH][TASK {task_id}] Found {len(python_files_in_tree)} Python files, {len(java_files_in_tree)} Java files, and {len(other_important_files)} other important files.")
         sys.stdout.flush()
         
         supabase_client.update_table_data(
@@ -152,7 +163,7 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             {
                 "repo_url": repo_url,
                 "status": "PENDING",
-                "state": "Python file list prepared, starting file content analysis",
+                "state": "Code file list prepared, starting file content analysis",
                 "result": None,
                 "progress": 65,
                 "error": None,
@@ -178,6 +189,24 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
                     if file_path in IMPORTANT_FILES:
                         file_contents_for_framework_detection[file_path] = content
 
+        # Analyze Java files
+        for file_item in java_files_in_tree:
+            if parsed_files_count >= MAX_FILES_TO_PARSE: break
+            file_path = file_item.get('path')
+            if not file_path: continue
+            content = github_api.get_file_content(owner, repo_name, file_path, default_branch)
+            if content:
+                analysis_result = code_parser.analyze_java_content(content, filename=file_path)
+                if analysis_result:
+                    analyzed_files_paths.append(file_path)
+                    all_functions.extend(analysis_result["functions"])
+                    all_classes.extend(analysis_result["classes"])
+                    all_imports.update(analysis_result["imports"])
+                    total_java_lines += analysis_result["line_count"]
+                    parsed_files_count += 1
+                    # Store Java files for framework detection
+                    file_contents_for_framework_detection[file_path] = content
+
         # Fetch content for other important files (if not already fetched)
         for file_item in other_important_files:
             file_path = file_item.get('path')
@@ -191,7 +220,7 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             {
                 "repo_url": repo_url,
                 "status": "PENDING",
-                "state": "Python file analysis complete, aggregating results",
+                "state": "Code analysis complete, aggregating results",
                 "result": None,
                 "progress": 75,
                 "error": None,
@@ -201,13 +230,13 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         # Aggregate code analysis results
         code_analysis_results = {
             "files_analyzed_count": parsed_files_count,
-            "lines_analyzed_count": total_py_lines,
+            "lines_analyzed_count": total_py_lines + total_java_lines,
             "unique_classes": sorted(list(set(all_classes))),
             "unique_functions": sorted(list(set(all_functions))),
             "unique_imports": sorted(list(all_imports)),
             "analyzed_files_list": analyzed_files_paths
         }
-        print(f"[WALKTHROUGH][TASK {task_id}] In-memory code analysis complete. Parsed {parsed_files_count} Python files.")
+        print(f"[WALKTHROUGH][TASK {task_id}] In-memory code analysis complete. Parsed {parsed_files_count} files ({len(python_files_in_tree)} Python, {len(java_files_in_tree)} Java).")
         sys.stdout.flush()
 
         # --- 3b. Detect Frameworks ---
