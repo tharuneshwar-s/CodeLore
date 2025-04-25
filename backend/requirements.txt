@@ -1,6 +1,6 @@
 fastapi
 uvicorn[standard]
-celery >= 5.0
+celery
 python-dotenv
 requests # For API calls
 google-generativeai
