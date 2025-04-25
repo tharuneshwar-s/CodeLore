@@ -72,6 +72,15 @@ async def submit_analysis(request: RepoInput):
 
         # --- Save initial PENDING state to Supabase ---
         # This allows polling immediately even before the worker picks up the task
+        supabase_client.save_analysis_to_supabase({
+            "task_id": task_id,
+            "repo_url": repo_url,
+            "status": "PENDING", # Or "STARTED" if task_track_started=True
+            "result": None, # Clear previous result if any
+            "progress": 0, 
+            "error": None,
+        })
+        
         
         return JSONResponse(
             status_code=status.HTTP_202_ACCEPTED,

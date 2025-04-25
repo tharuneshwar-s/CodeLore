@@ -99,8 +99,8 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A259FF', '#4BC0C0'
 
 const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState('overview');
-  
-  const formatDate = (dateString: string) => {
+
+  const formatDate = (dateString: any) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -109,30 +109,36 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
     });
   };
 
-  // Convert file type distribution to array for charts
+  // Prepare chart data
   const fileTypeData = Object.entries(data.file_type_distribution).map(([type, count], index) => ({
     name: type,
     value: count,
     color: COLORS[index % COLORS.length]
   }));
 
-  // Format classes and functions for display
+  // Prepare pie chart data
+  const pieData = fileTypeData.map(item => ({
+    name: item.name,
+    value: item.value
+  }));
+
+  // Get top classes and functions for display
   const classesData = data.analysis_details.code_analysis.unique_classes.slice(0, 10);
   const functionsData = data.analysis_details.code_analysis.unique_functions.slice(0, 10);
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row items-start md:items-center">
-            <div className="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
-              <Image 
-                src={data.repo_info.owner.avatar_url} 
+            <div className="flex-shrink-0 mb-4 md:mb-0 md:mr-6 w-[250px] h-[250px]">
+              <Image
+                src={data.repo_info.owner.avatar_url}
                 alt={data.repo_info.owner.login}
-                width={96}
-                height={96}
-                className="rounded-lg shadow-lg border-2 border-white"
+                width={1000}
+                height={1000}
+                className="rounded-lg w-full h-full shadow-lg border-2 border-white"
               />
             </div>
             <div className="flex-1">
@@ -142,10 +148,10 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
                   <p className="text-indigo-200 mt-1">{data.repo_info.full_name}</p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                  <Link 
+                  <Link
                     href={data.repo_info.html_url}
                     target="_blank"
-                    rel="noopener noreferrer" 
+                    rel="noopener noreferrer"
                     className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-600 bg-white hover:bg-indigo-50 transition-colors"
                   >
                     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -158,16 +164,16 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
               <p className="mt-4 text-lg">{data.repo_info.description}</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {data.detected_frameworks?.map((framework, index) => (
-                  <span 
-                    key={index} 
+                  <span
+                    key={index}
                     className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-700 text-indigo-100"
                   >
                     {framework}
                   </span>
                 ))}
                 {data.repo_info.topics?.map((topic, index) => (
-                  <span 
-                    key={index} 
+                  <span
+                    key={index}
                     className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-700 text-indigo-100"
                   >
                     {topic}
@@ -176,7 +182,7 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
               </div>
             </div>
           </div>
-          
+
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
               <p className="text-3xl font-bold">{data.repo_info.stargazers_count.toLocaleString()}</p>
@@ -197,114 +203,157 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
           </div>
         </div>
       </div>
-      
+
       {/* Navigation Tabs */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex -mb-px overflow-x-auto">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${
-                activeTab === 'overview'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'overview'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Overview
             </button>
             <button
               onClick={() => setActiveTab('analysis')}
-              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${
-                activeTab === 'analysis'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'analysis'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Code Analysis
             </button>
             <button
               onClick={() => setActiveTab('structure')}
-              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${
-                activeTab === 'structure'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'structure'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Repository Structure
             </button>
             <button
               onClick={() => setActiveTab('imports')}
-              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${
-                activeTab === 'imports'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`whitespace-nowrap py-4 px-6 font-medium text-sm border-b-2 ${activeTab === 'imports'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Imports & Dependencies
             </button>
           </nav>
         </div>
       </div>
-      
+
       {/* Content Sections */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
+          <div className="space-y-8 grid  ">
             {/* Narrative Section */}
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Repository Overview</h2>
-                <p className="text-gray-700 mb-6 text-lg leading-relaxed">{data.narrative}</p>
-                
-                {/* Latest Commit Info */}
-                <div className="mt-8 bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">Latest Commit</h3>
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="h-10 w-10 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full">
-                        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                          <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
-                        </svg>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Repository Overview */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Repository Overview</h2>
+                  <div className="text-gray-700 mb-6 text-lg leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: data.narrative }} />
+
+                  {/* Latest Commit Info */}
+                  <div className="mt-8 bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-800 mb-2">Latest Commit</h3>
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 mr-3">
+                        <div className="h-10 w-10 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full">
+                          <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        {formatDate(data.analysis_details.latest_commit.date)}
-                      </p>
-                      <p className="font-medium mt-1">{data.analysis_details.latest_commit.message}</p>
-                      <p className="text-indigo-600 text-sm mt-1">by {data.analysis_details.latest_commit.author}</p>
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {formatDate(data.analysis_details.latest_commit.date)}
+                        </p>
+                        <p className="font-medium mt-1">{data.analysis_details.latest_commit.message}</p>
+                        <p className="text-indigo-600 text-sm mt-1">by {data.analysis_details.latest_commit.author}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* File Distribution Chart */}
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">File Type Distribution</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="h-80 flex items-center justify-center">
-                    <div className="w-full max-w-lg">
-                      {fileTypeData.map((entry, index) => (
-                        <div key={index} className="mb-3">
-                          <div className="flex justify-between mb-1">
-                            <span className="text-gray-700 font-medium">{entry.name}</span>
-                            <span className="text-gray-700">{entry.value} files</span>
+
+              {/* File Distribution Chart */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-6 ">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                      </svg>
+                      File Type Distribution
+                    </h2>
+                    <span className="bg-indigo-50 text-indigo-700 text-xs font-medium px-2 py-1 rounded-full">
+                      {Object.values(data.file_type_distribution).reduce((a, b) => a + b, 0)} files
+                    </span>
+                  </div>
+                  
+                  <div className="gap-4">
+                    <div className="h-64 flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            innerRadius={30}
+                            fill="#8884d8"
+                            dataKey="value"
+                            paddingAngle={2}
+                            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [`${value} files`, 'Count']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
+                    <div className="flex flex-col justify-center max-h-full overflow-y-auto pr-2">
+                      <div className="space-y-2 text-sm">
+                        {fileTypeData.map((entry, index) => (
+                          <div key={index} className="group hover:bg-gray-50 p-1 rounded">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-sm mr-2" style={{ backgroundColor: entry.color }}></div>
+                                <span className="text-gray-800 font-medium">{entry.name}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="text-gray-700 mr-2">{entry.value}</span>
+                                <span className="text-gray-500 text-xs">
+                                  {((entry.value / Object.values(data.file_type_distribution).reduce((a, b) => a + b, 0)) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div
+                                className="h-1.5 rounded-full"
+                                style={{
+                                  width: `${(entry.value / Math.max(...fileTypeData.map(item => item.value))) * 100}%`,
+                                  backgroundColor: entry.color
+                                }}
+                              ></div>
+                            </div>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                              className="h-2.5 rounded-full" 
-                              style={{ 
-                                width: `${(entry.value / Math.max(...fileTypeData.map(item => item.value))) * 100}%`,
-                                backgroundColor: entry.color 
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -312,14 +361,14 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
             </div>
           </div>
         )}
-        
+
         {/* Code Analysis Tab */}
         {activeTab === 'analysis' && (
           <div className="space-y-8">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Code Analysis</h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Unique Classes Section */}
                   <div>
@@ -341,7 +390,7 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Unique Functions Section */}
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Top Functions</h3>
@@ -363,7 +412,7 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Files Analyzed List - Limited to avoid overwhelming display */}
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold mb-3">Analyzed Files</h3>
@@ -389,14 +438,14 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
             </div>
           </div>
         )}
-        
+
         {/* Repository Structure Tab */}
         {activeTab === 'structure' && (
           <div className="space-y-8">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Repository Structure</h2>
-                
+
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="overflow-auto max-h-[600px]">
                     <ul className="space-y-2">
@@ -405,12 +454,12 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
                         const isTopLevel = !item.path.includes('/');
                         const pathParts = item.path.split('/');
                         const depth = pathParts.length - 1;
-                        
+
                         if (depth > 2) return null; // Skip deeply nested files for UI clarity
-                        
+
                         return (
-                          <li 
-                            key={index} 
+                          <li
+                            key={index}
                             className={`flex items-start ${depth > 0 ? 'ml-' + (depth * 6) : ''}`}
                           >
                             {item.type === 'tree' ? (
@@ -442,14 +491,14 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
             </div>
           </div>
         )}
-        
+
         {/* Imports & Dependencies Tab */}
         {activeTab === 'imports' && (
           <div className="space-y-8">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Imports & Dependencies</h2>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Imports Section */}
                   <div>
@@ -467,7 +516,7 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
                       </ul>
                     </div>
                   </div>
-                  
+
                   {/* Frameworks Detected */}
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Detected Frameworks</h3>
@@ -484,7 +533,7 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
                           </div>
                         </div>
                       ))}
-                      
+
                       {(!data.detected_frameworks || data.detected_frameworks.length === 0) && (
                         <div className="col-span-2 text-center p-8 text-gray-500 italic">
                           No frameworks detected
@@ -502,6 +551,4 @@ const EnhancedRepositoryDetail: React.FC<EnhancedRepositoryDetailProps> = ({ dat
   );
 };
 
-export default EnhancedRepositoryDetail; 
-
-
+export default EnhancedRepositoryDetail;

@@ -50,12 +50,12 @@ Edit `.env` and set your configuration values, especially:
 
 2. Start the Celery worker:
 ```bash
-celery -A app.celery_app worker --loglevel=info
+celery -A worker.analysis_task worker --pool=solo --loglevel=info
 ```
 
 3. Start the FastAPI server:
 ```bash
-uvicorn app.main:app --reload
+uvicorn api.main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`

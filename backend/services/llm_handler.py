@@ -38,32 +38,54 @@ def generate_narrative(analysis_data: Dict[str, Any], repo_url: str) -> str:
         sys.stdout.flush()
         raise RuntimeError("Gemini API key not configured or model initialization failed.")
 
-    # Extract data for prompt
+    # Extract data
     latest_commit = analysis_data.get('latest_commit', {})
     code_analysis = analysis_data.get('code_analysis', {})
     owner = analysis_data.get('owner', 'N/A')
     repo_name = analysis_data.get('repo_name', 'N/A')
+    detected_frameworks = analysis_data.get('detected_frameworks', [])
+    MAX_ITEMS = 300000 # Consistent limit
 
-    MAX_ITEMS = 15 # Limit samples in prompt
+    # --- Construct the detailed prompt with styling instructions ---
     prompt = f"""
-    Analyze the following information extracted *via API* from the GitHub repository {owner}/{repo_name} ({repo_url})
-    and generate an engaging narrative (around 150-250 words, like a mini-documentary intro)
-    about its likely purpose, key components, and current state based on the latest commit.
-    Note: Full commit history and contributor analysis were not performed.
+    You are 'CodeLore', a digital storyteller crafting an engaging narrative about a GitHub repository based on API data. Your output MUST be a single block of text containing embedded HTML `<span>` tags with Tailwind CSS classes for styling specific keywords.
 
-    Extracted Data:
-    - Latest Commit Author: {latest_commit.get('author', 'N/A')}
-    - Latest Commit Date: {latest_commit.get('date', 'N/A')}
-    - Latest Commit Message Snippet: {latest_commit.get('message', 'N/A')}
-    - Python Files Analyzed (via API): {code_analysis.get('files_analyzed_count', 0)}
-    - Total Python Lines Analyzed (approx): {code_analysis.get('lines_analyzed_count', 0)}
-    - Key Functions Identified (sample): {', '.join(code_analysis.get('unique_functions', [])[:MAX_ITEMS])}{'...' if len(code_analysis.get('unique_functions', [])) > MAX_ITEMS else ''} ({len(code_analysis.get('unique_functions', []))} total)
-    - Key Classes Identified (sample): {', '.join(code_analysis.get('unique_classes', [])[:MAX_ITEMS])}{'...' if len(code_analysis.get('unique_classes', [])) > MAX_ITEMS else ''} ({len(code_analysis.get('unique_classes', []))} total)
-    - Notable Libraries/Imports (sample): {', '.join(code_analysis.get('unique_imports', [])[:MAX_ITEMS])}{'...' if len(code_analysis.get('unique_imports', [])) > MAX_ITEMS else ''} ({len(code_analysis.get('unique_imports', []))} total)
+    **The Subject:** The repository '{repo_name}' by '{owner}' ({repo_url}).
 
-    Narrative:
+    **The Clues (API Snapshot):**
+    *   Latest Dispatch: Commit by '{latest_commit.get('author', 'N/A')}' on {latest_commit.get('date', 'N/A')} ("{latest_commit.get('message', 'N/A')}")
+    *   Tech Toolkit Hints: Frameworks/Libraries detected include: {', '.join(detected_frameworks) if detected_frameworks else 'None detected'}.
+    *   Code Blueprint (Python Sample):
+        - Analyzed {code_analysis.get('files_analyzed_count', 0)} files (~{code_analysis.get('lines_analyzed_count', 0)} lines).
+        - Key Functions (sample): {', '.join(code_analysis.get('unique_functions', [])[:MAX_ITEMS])}{'...' if len(code_analysis.get('unique_functions', [])) > MAX_ITEMS else ''}
+        - Key Classes (sample): {', '.join(code_analysis.get('unique_classes', [])[:MAX_ITEMS])}{'...' if len(code_analysis.get('unique_classes', [])) > MAX_ITEMS else ''}
+        - Notable Imports (sample): {', '.join(code_analysis.get('unique_imports', [])[:MAX_ITEMS])}{'...' if len(code_analysis.get('unique_imports', [])) > MAX_ITEMS else ''}
+
+    **Your Storytelling & Styling Task:**
+    Based *only* on these clues:
+    1.  **Infer Purpose:** Start with the project's likely mission.
+    2.  **Describe Tech:** Discuss the technical landscape suggested by imports/frameworks.
+    3.  **Reveal Logic:** Hint at the core logic using function/class names.
+    4.  **Show Status:** Mention the latest commit activity.
+    5.  **Weave Narrative:** Create a smooth, engaging story flow (150-250 words).
+
+    **Styling Rules (Apply within the narrative text):**
+    *   Wrap detected **frameworks/libraries** (from 'Tech Toolkit Hints') in: `<span class="font-semibold text-blue-600 dark:text-blue-400">FrameworkName</span>`
+    *   Wrap key **function names** (from 'Key Functions' sample) mentioned in the narrative in: `<span class="font-mono text-sm text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900 px-1 rounded">function_name()</span>` (add parentheses if appropriate)
+    *   Wrap key **class names** (from 'Key Classes' sample) mentioned in the narrative in: `<span class="font-medium text-teal-700 dark:text-teal-300">ClassName</span>`
+    *   Wrap the inferred **project purpose/domain** (first sentence or key phrase) in: `<span class="font-bold text-gray-800 dark:text-gray-200">Purpose Phrase</span>`
+    *   Wrap the **latest commit message snippet** if mentioned in: `<span class="italic text-gray-600 dark:text-gray-400">"Commit message..."</span>`
+
+    **Output Format:** A single block of narrative text containing the embedded HTML `<span>` tags as specified. Do NOT output markdown formatting like backticks or asterisks. Ensure HTML is valid.
+
+    **Keywords for Potential Styling:**
+    - Frameworks/Libraries: {detected_frameworks}
+    - Functions: {code_analysis.get('unique_functions', [])[:MAX_ITEMS]}
+    - Classes: {code_analysis.get('unique_classes', [])[:MAX_ITEMS]}
     """
-    # print(f"[WALKTHROUGH] llm_handler.py: Prompt:\n{prompt}") # DEBUG
+
+    
+    
 
     print("[WALKTHROUGH] llm_handler.py: Sending prompt to Gemini...")
     sys.stdout.flush()
