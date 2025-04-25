@@ -1,9 +1,8 @@
 fastapi
-uvicorn[standard]
+uvicorn
 celery
 python-dotenv
 requests # For API calls
 google-generativeai
 supabase
-flower
 # GitPython is NOT needed for this version
