@@ -1,7 +1,6 @@
 import Hero from '@/components/Hero';
 import Link from 'next/link';
 // import { dummyRepositories } from '@/data/dummyData';
-import RepositoryCard from '@/components/RepositoryCard';
 
 export default function Home() {
   // Get the repositories with analysis for featured section
@@ -81,40 +80,6 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Featured Repositories Section */}
-      {/* <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">Featured Repositories</h2>
-            <p className="mt-2 text-3xl leading-8 font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Explore analyzed repositories
-            </p>
-            <div className="mt-4 max-w-2xl mx-auto">
-              <p className="text-xl text-slate-600">
-                Discover insights from popular open-source repositories through our AI-powered analysis
-              </p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredRepos.map((repo) => (
-              <RepositoryCard key={repo.id} repository={repo} />
-            ))}
-          </div>
-          
-          <div className="mt-14 text-center">
-            <Link 
-              href="/repositories" 
-              className="inline-flex items-center px-6 py-3 rounded-lg shadow-sm text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 font-medium transition-all duration-300"
-            >
-              View All Repositories
-              <svg className="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section> */}
 
       
       {/* How It Works Section */}
