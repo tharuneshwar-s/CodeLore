@@ -2,21 +2,65 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 export default function Hero() {
   const [repoUrl, setRepoUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+    setErrorMessage('');
+
+    // Basic validation for GitHub URL
+    if (!repoUrl.startsWith('https://github.com/')) {
+      setRepoUrl('');
+      const errorMessage = 'Please enter a valid GitHub repository URL.';
+      // Display error message in UI
+      const errorElement = document.getElementById('repo-url-error');
+      if (errorElement) {
+        errorElement.textContent = errorMessage;
+        errorElement.classList.remove('hidden');
+      }
       setIsLoading(false);
-      router.push('/repositories/1');
-    }, 1500);
+      return;
+    }
+
+    try {
+      // Use axios for the API call and handle CORS
+      const response = await axios.post(
+        'http://127.0.0.1:8000/analyze',
+        { repo_url: repoUrl },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // withCredentials: true, // Uncomment if backend requires credentials/cookies
+        }
+      );
+      const data = response.data;
+      console.log('Response data:', data);
+
+      if (data && data.task_id) {
+        router.push(`/repositories/${data.task_id}`);
+      } else {
+        setErrorMessage('Analysis complete, but no repository ID returned.');
+      }
+    } catch (err: any) {
+      // Handle CORS error specifically
+      if (err.response && err.response.status === 403) {
+        setErrorMessage('CORS error: Unable to reach the backend. Please ensure CORS is enabled on the server.');
+      } else if (err.code === 'ERR_NETWORK') {
+        setErrorMessage('Network error: Unable to reach the backend. Please check your connection or CORS settings.');
+      } else {
+        setErrorMessage('Error analyzing repository: ' + (err?.message || 'Unknown error'));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -57,7 +101,7 @@ export default function Hero() {
                       value={repoUrl}
                       onChange={(e) => setRepoUrl(e.target.value)}
                       required
-                      className="block w-full pl-10 pr-4 py-4 border-none outline-none  text-slate-800 ring-1 ring-inset ring-slate-300 bg-white/90 backdrop-blur-sm placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-lg sm:rounded-r-none sm:text-sm"
+                      className="block w-full pl-5 pr-4 py-4 border-none outline-none  text-slate-800 ring-1 ring-inset ring-slate-300 bg-white/90 backdrop-blur-sm placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-lg sm:rounded-r-none sm:text-sm"
                     />
                   </div>
                   <div>
@@ -85,6 +129,9 @@ export default function Hero() {
                     </button>
                   </div>
                 </form>
+                <p id="repo-url-error" className={`${errorMessage ? '' : 'hidden'} mt-2 text-sm text-red-500`}>
+                  {errorMessage || 'Please enter a valid GitHub repository URL.'}
+                </p>
                 <p className="mt-3 text-sm text-slate-400">
                   Enter a GitHub repository URL to start the analysis. Public repositories only.
                 </p>

@@ -1,5 +1,6 @@
-import { dummyRepositories } from '@/data/dummyData';
+// import { dummyRepositories } from '@/data/dummyData';
 import RepositoryCard from '@/components/RepositoryCard';
+import Link from 'next/link';
 
 export default function RepositoriesPage() {
   return (
@@ -12,6 +13,17 @@ export default function RepositoriesPage() {
             <p className="max-w-xl mt-5 mx-auto text-xl">
               Explore repositories analyzed by our AI to understand their structure, architecture, and implementation details.
             </p>
+            <div className="mt-8">
+              <Link
+                href="/analyse"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Analyze New Repository
+                <svg className="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

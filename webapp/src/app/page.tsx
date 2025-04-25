@@ -1,11 +1,11 @@
 import Hero from '@/components/Hero';
 import Link from 'next/link';
-import { dummyRepositories } from '@/data/dummyData';
+// import { dummyRepositories } from '@/data/dummyData';
 import RepositoryCard from '@/components/RepositoryCard';
 
 export default function Home() {
   // Get the repositories with analysis for featured section
-  const featuredRepos = dummyRepositories.filter(repo => repo.analysis).slice(0, 3);
+  // const featuredRepos = dummyRepositories.filter(repo => repo.analysis).slice(0, 3);
 
   return (
     <div>
@@ -82,7 +82,7 @@ export default function Home() {
       </section>
       
       {/* Featured Repositories Section */}
-      <section className="py-20 bg-white">
+      {/* <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">Featured Repositories</h2>
@@ -114,7 +114,8 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
+
       
       {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-b from-slate-50 to-white">

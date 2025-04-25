@@ -1,0 +1,245 @@
+# worker/analysis_task.py
+from celery import shared_task # Use shared_task as celery instance might not be available here directly
+from services import github_api, llm_handler, code_parser # Import helpers from services
+import supabase_client
+import sys
+from typing import Dict, Any, List, Set
+import logging
+
+from worker.celery_app import celery
+from celery import shared_task
+import requests
+
+# --- Logging Configuration ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# --- Constants ---
+MAX_FILES_TO_PARSE = 200 # Limit API calls for content
+IMPORTANT_FILES = ["requirements.txt", "Pipfile", "package.json", "Dockerfile", "tsconfig.json", "pyproject.toml", "pom.xml", "build.gradle"] # For framework detection
+
+# --- Celery Task Definition ---
+print("[WALKTHROUGH] worker/analysis_task.py: Defining Celery task 'run_codelore_analysis'...")
+sys.stdout.flush()
+
+# Use shared_task, bind=True to get 'self'
+@shared_task(bind=True)
+# @celery.task(
+#  bind=True,   
+# )
+def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
+    """
+    Celery task to analyze a Git repository *via GitHub API* and generate a narrative.
+    Orchestrates API calls, parsing, LLM interaction, and saves results to Supabase.
+    """
+    task_id = self.request.id # Get the REAL task ID from Celery
+    if not task_id:
+        # Should not happen with bind=True, but as a fallback
+        import uuid
+        task_id = str(uuid.uuid4())
+        print(f"[WALKTHROUGH][TASK {task_id}] WARNING: Could not get task ID from request, generated UUID.")
+
+    print(f"\n[WALKTHROUGH][TASK {task_id}] Task started for URL: {repo_url} (API Version)")
+    sys.stdout.flush()
+
+    # --- Initial Status Update ---
+    supabase_client.save_analysis_to_supabase({
+        "task_id": task_id,
+        "repo_url": repo_url,
+        "status": "PENDING", # Or "STARTED" if task_track_started=True
+        "result": None # Clear previous result if any
+    })
+    print(f"[WALKTHROUGH][TASK {task_id}] Initial status saved to Supabase.")
+    sys.stdout.flush()
+
+    # --- Pre-checks ---
+    if not llm_handler.gemini_model:
+        error_msg = "Gemini API key not configured or model init failed."
+        print(f"[WALKTHROUGH][TASK {task_id}] ERROR: {error_msg} Failing task.")
+        sys.stdout.flush()
+        supabase_client.update_analysis_status(task_id, 'FAILURE', error_msg)
+        raise RuntimeError(error_msg) # Re-raise to fail Celery task
+
+    owner_repo = github_api.get_owner_repo(repo_url)
+    if not owner_repo:
+        error_msg = f"Invalid GitHub URL format: {repo_url}"
+        print(f"[WALKTHROUGH][TASK {task_id}] ERROR: {error_msg}")
+        sys.stdout.flush()
+        supabase_client.update_analysis_status(task_id, 'FAILURE', error_msg)
+        raise ValueError(error_msg) # Re-raise
+    owner, repo_name = owner_repo
+
+    try:
+        # --- 1. Get Default Branch ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 1: Getting default branch...")
+        sys.stdout.flush()
+        default_branch = github_api.get_default_branch(owner, repo_name)
+
+        # --- 2. Get File Tree ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 2: Getting repository file tree...")
+        sys.stdout.flush()
+        repo_tree = github_api.get_repo_tree(owner, repo_name, default_branch)
+        # No need to fail if tree is empty, analysis will just be sparse
+
+        # --- 3. Analyze Code In Memory ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 3: Analyzing Python files (max {MAX_FILES_TO_PARSE})...")
+        sys.stdout.flush()
+        all_functions: List[str] = []
+        all_classes: List[str] = []
+        all_imports: Set[str] = set()
+        analyzed_files_paths: List[str] = []
+        total_py_lines: int = 0
+        parsed_files_count: int = 0
+        file_contents_for_framework_detection: Dict[str, str] = {} # Store content of important files
+
+        python_files_in_tree = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '').endswith('.py')]
+        other_important_files = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '') in IMPORTANT_FILES]
+
+        print(f"[WALKTHROUGH][TASK {task_id}] Found {len(python_files_in_tree)} Python files and {len(other_important_files)} other important files.")
+        sys.stdout.flush()
+
+        # Analyze Python files
+        for file_item in python_files_in_tree:
+            if parsed_files_count >= MAX_FILES_TO_PARSE: break
+            file_path = file_item.get('path')
+            if not file_path: continue
+            # time.sleep(0.05) # Optional small delay
+            content = github_api.get_file_content(owner, repo_name, file_path, default_branch)
+            if content:
+                analysis_result = code_parser.analyze_python_content(content, filename=file_path)
+                if analysis_result:
+                    analyzed_files_paths.append(file_path)
+                    all_functions.extend(analysis_result["functions"])
+                    all_classes.extend(analysis_result["classes"])
+                    all_imports.update(analysis_result["imports"])
+                    total_py_lines += analysis_result["line_count"]
+                    parsed_files_count += 1
+                    # Store content if it's also an important file type
+                    if file_path in IMPORTANT_FILES:
+                         file_contents_for_framework_detection[file_path] = content
+
+        # Fetch content for other important files (if not already fetched)
+        for file_item in other_important_files:
+             file_path = file_item.get('path')
+             if file_path and file_path not in file_contents_for_framework_detection:
+                 # time.sleep(0.05) # Optional small delay
+                 content = github_api.get_file_content(owner, repo_name, file_path, default_branch)
+                 if content:
+                     file_contents_for_framework_detection[file_path] = content
+
+
+        # Aggregate code analysis results
+        code_analysis_results = {
+            "files_analyzed_count": parsed_files_count,
+            "lines_analyzed_count": total_py_lines,
+            "unique_classes": sorted(list(set(all_classes))),
+            "unique_functions": sorted(list(set(all_functions))),
+            "unique_imports": sorted(list(all_imports)),
+            "analyzed_files_list": analyzed_files_paths
+        }
+        print(f"[WALKTHROUGH][TASK {task_id}] In-memory code analysis complete. Parsed {parsed_files_count} Python files.")
+        sys.stdout.flush()
+
+        # --- 3b. Detect Frameworks ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 3b: Detecting frameworks...")
+        sys.stdout.flush()
+        detected_frameworks = code_parser.detect_frameworks_from_files(
+            file_contents_for_framework_detection,
+            # imports=all_imports # Pass Python imports for better detection
+        )
+
+        # --- 4. Get Latest Commit Info ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 4: Getting latest commit info...")
+        sys.stdout.flush()
+        latest_commit_info = github_api.get_latest_commit_info(owner, repo_name, default_branch)
+
+        # --- 5. Get General Repo Info ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 5: Getting general repo info...")
+        sys.stdout.flush()
+        repo_info = github_api.get_repo_info(owner, repo_name)
+        title = repo_info.get("name", repo_name) # Use repo name as title
+
+        # --- 6. Calculate File Type Distribution ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 6: Calculating file type distribution...")
+        sys.stdout.flush()
+        file_type_distribution = {}
+        for item in repo_tree:
+            if item.get('type') == 'blob':
+                path = item.get('path', '')
+                ext = path.split('.')[-1].lower() if '.' in path else 'no_extension'
+                file_type_distribution[ext] = file_type_distribution.get(ext, 0) + 1
+
+        # --- 7. Generate Narrative ---
+        print(f"[WALKTHROUGH][TASK {task_id}] Step 7: Generating narrative...")
+        sys.stdout.flush()
+        narrative_input_data = {
+            'latest_commit': latest_commit_info,
+            'code_analysis': code_analysis_results,
+            'owner': owner,
+            'repo_name': repo_name,
+            'detected_frameworks': detected_frameworks,
+            # Add other relevant info if needed by the prompt
+        }
+        narrative = llm_handler.generate_narrative(narrative_input_data, repo_url)
+        print(f"[WALKTHROUGH][TASK {task_id}] Narrative generation complete.")
+        sys.stdout.flush()
+
+        # --- 8. Format and Save Final Result ---
+        final_result_payload = {
+            # "status": "SUCCESS", # Status is stored separately in DB
+            "narrative": narrative,
+            "analysis_details": {
+                 "repo_url": repo_url,
+                 "source": "GitHub API",
+                 "latest_commit": latest_commit_info,
+                 "code_analysis": code_analysis_results,
+            },
+            # Add the extra fields from the user's example JSON
+            "repo_tree": repo_tree, # Include the fetched tree
+            "file_type_distribution": file_type_distribution,
+            "title": title,
+            "repo_info": repo_info, # Include general repo info
+            "detected_frameworks": detected_frameworks
+        }
+
+        print(f"[WALKTHROUGH][TASK {task_id}] Analysis completed successfully. Saving final result to Supabase.")
+        sys.stdout.flush()
+        save_response = supabase_client.save_analysis_to_supabase({
+            "task_id": task_id,
+            "repo_url": repo_url,
+            "status": "SUCCESS",
+            "result": final_result_payload # Store the detailed payload here
+        })
+
+        if not save_response or not save_response.data:
+             print(f"[WALKTHROUGH][TASK {task_id}] WARNING: Failed to save final result to Supabase.")
+             # Decide if this should be a task failure or just a warning
+             # Let's treat it as success for now, but log the warning.
+             logger.warning(f"Task {task_id} completed but failed to save final result to Supabase.")
+
+
+        # Return the task_id or a success indicator. The actual result is polled from Supabase.
+        # Returning the full result might be large and unnecessary if polling Supabase.
+        return {"status": "SUCCESS", "task_id": task_id, "message": "Analysis complete. Result stored."}
+
+
+    # --- Centralized Error Handling ---
+    except (requests.exceptions.RequestException, ValueError, RuntimeError) as e:
+        error_type_name = type(e).__name__
+        error_message = str(e)
+        print(f"[WALKTHROUGH][TASK {task_id}] ERROR (Expected - {error_type_name}): Task failed: {error_message}")
+        sys.stdout.flush()
+        logger.error(f"[{task_id}] Task failed for URL {repo_url} with expected error: {e}", exc_info=True)
+        supabase_client.update_analysis_status(task_id, 'FAILURE', error_message)
+        raise e # Re-raise for Celery
+    except Exception as e:
+        error_type_name = type(e).__name__
+        error_message = str(e)
+        print(f"[WALKTHROUGH][TASK {task_id}] ERROR (Unexpected - {error_type_name}): Task failed: {error_message}")
+        sys.stdout.flush()
+        logger.error(f"[{task_id}] Task failed unexpectedly for URL {repo_url}: {e}", exc_info=True)
+        supabase_client.update_analysis_status(task_id, 'FAILURE', 'An unexpected server error occurred during analysis.')
+        raise e # Re-raise for Celery
+
+print("[WALKTHROUGH] worker/analysis_task.py: Finished loading.")
+sys.stdout.flush()
