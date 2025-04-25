@@ -3,11 +3,89 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --foreground-rgb: 15, 23, 42;
+  --background-rgb: 249, 250, 251;
+  
+  /* Theme Colors */
+  --color-primary-50: 238, 242, 255;
+  --color-primary-100: 224, 231, 255;
+  --color-primary-200: 199, 210, 254;
+  --color-primary-300: 165, 180, 252;
+  --color-primary-400: 129, 140, 248;
+  --color-primary-500: 99, 102, 241;
+  --color-primary-600: 79, 70, 229;
+  --color-primary-700: 67, 56, 202;
+  --color-primary-800: 55, 48, 163;
+  --color-primary-900: 49, 46, 129;
+  --color-primary-950: 30, 27, 75;
+  
+  --color-accent-50: 236, 254, 255;
+  --color-accent-100: 207, 250, 254;
+  --color-accent-200: 165, 243, 252;
+  --color-accent-300: 103, 232, 249;
+  --color-accent-400: 34, 211, 238;
+  --color-accent-500: 6, 182, 212;
+  --color-accent-600: 8, 145, 178;
+  --color-accent-700: 14, 116, 144;
+  --color-accent-800: 21, 94, 117;
+  --color-accent-900: 22, 78, 99;
+  --color-accent-950: 8, 51, 68;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(var(--color-primary-100), 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary-400), 0.7);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-primary-500), 0.8);
+}
+
+/* Custom Animations */
+@keyframes shine {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-1;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-md shadow-md hover:shadow-lg hover:from-indigo-500 hover:to-indigo-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-white text-indigo-600 border border-indigo-200 rounded-md shadow-sm hover:shadow-md hover:bg-indigo-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+  }
+  
+  .shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shine 1.5s infinite;
+  }
 } 

@@ -149,6 +149,18 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         repo_info = github_api.get_repo_info(owner, repo_name)
         title = repo_info.get("name", repo_name)
 
+        # After fetching repo_tree_full
+        important_files = ["requirements.txt", "Pipfile", "package.json", "Dockerfile", "tsconfig.json"]
+        file_contents = {}
+        for item in repo_tree_full:
+            path = item.get("path", "")
+            if path in important_files or path.endswith(".ipynb"):
+                content = github_api.get_file_content(owner, repo_name, path, default_branch)
+                if content:
+                    file_contents[path] = content
+
+        frameworks = code_parser.detect_frameworks_from_files(file_contents)
+
         final_result = {
             "status": "SUCCESS",
             "narrative": narrative,
@@ -162,7 +174,8 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             "repo_tree": repo_tree_full,
             "file_type_distribution": file_type_distribution,
             "title": title,
-            "repo_info": repo_info
+            "repo_info": repo_info,
+            "detected_frameworks": frameworks
         }
         print(f"[WALKTHROUGH][TASK {task_id}] Analysis completed successfully (API Version). Returning result.")
         return final_result

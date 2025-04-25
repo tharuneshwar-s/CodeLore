@@ -187,250 +187,106 @@ export interface ApiResponse {
 }
 
 // Sample API response data
-export const sampleApiResponse: ApiResponse = {
-  status: "completed",
-  narrative: "This repository is a modern React application built with Next.js that provides an AI-powered tool for analyzing and understanding code repositories. The application uses a combination of GitHub API integration and large language models to parse code and generate human-readable narratives about the codebase structure, components, and architecture. \n\nThe frontend is built with TypeScript, React, and Tailwind CSS, featuring a responsive design with various components for displaying repository information, analysis results, and visual representations of code statistics. The application follows a component-based architecture with clear separation of concerns between data fetching, presentation, and state management.\n\nThe repository contains well-organized components for navigation, displaying repository details, and presenting code analysis in various formats including structured overviews, technical narratives, and component breakdowns. The UI is polished with attention to detail in styling and user experience.",
-  analysis_details: {
-    repo_url: "https://github.com/codelore-dev/codelore",
-    source: "github",
-    latest_commit: {
-      date: "2023-11-15T14:32:18Z",
-      message: "Update repository analysis component with improved data visualization",
-      author: "Sarah Johnson"
-    },
-    code_analysis: {
-      files_analyzed_count: 42,
-      lines_analyzed_count: 3726,
-      unique_classes: [
-        "Repository", "Analysis", "StructureItem", "KeyComponent", 
-        "Technology", "Narrative", "RepositoryHeader", "RepositoryAnalysis",
-        "Hero", "Navbar", "Footer"
-      ],
-      unique_functions: [
-        "analyzeRepository", "fetchRepository", "parseCodeStructure", 
-        "analyzeDependencies", "generateNarrative", "renderStructure",
-        "setActiveTab", "handleSubmit", "RepositoryPage", "RepositoriesPage"
-      ],
-      unique_imports: [
-        "react", "next/link", "next/navigation", "react-dom",
-        "@/data/dummyData", "@/components/Navbar", "@/components/Footer",
-        "@/components/Hero", "@/components/RepositoryCard", "@/components/RepositoryHeader"
-      ],
-      analyzed_files_list: [
-        "src/app/page.tsx",
-        "src/app/layout.tsx",
-        "src/app/repositories/page.tsx",
-        "src/app/repositories/[id]/page.tsx",
-        "src/app/about/page.tsx",
-        "src/components/Navbar.tsx",
-        "src/components/Hero.tsx",
-        "src/components/RepositoryCard.tsx",
-        "src/components/RepositoryHeader.tsx",
-        "src/components/RepositoryAnalysis.tsx",
-        "src/components/Footer.tsx",
-        "src/data/dummyData.ts",
-        "tailwind.config.ts"
-      ]
-    }
-  },
-  task_id: "task_20231115_a7f939e2",
-  repo_tree: [
-    {
-      path: "webapp",
-      mode: "040000",
-      type: "tree",
-      sha: "7b9e0c8f9c8e6d7b6a5b4c3b2a1b0a9f8e7d6c5b",
-      size: 0,
-      url: "https://api.github.com/repos/codelore-dev/codelore/git/trees/7b9e0c8f9c8e6d7b6a5b4c3b2a1b0a9f8e7d6c5b"
-    },
-    {
-      path: "webapp/src",
-      mode: "040000",
-      type: "tree",
-      sha: "6a5b4c3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b",
-      size: 0,
-      url: "https://api.github.com/repos/codelore-dev/codelore/git/trees/6a5b4c3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b"
-    },
-    {
-      path: "webapp/src/app",
-      mode: "040000",
-      type: "tree",
-      sha: "5b4c3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a",
-      size: 0,
-      url: "https://api.github.com/repos/codelore-dev/codelore/git/trees/5b4c3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a"
-    },
-    {
-      path: "webapp/src/app/page.tsx",
-      mode: "100644",
-      type: "blob",
-      sha: "4c3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a5b",
-      size: 8645,
-      url: "https://api.github.com/repos/codelore-dev/codelore/git/blobs/4c3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a5b"
-    },
-    {
-      path: "webapp/src/app/layout.tsx",
-      mode: "100644",
-      type: "blob",
-      sha: "3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a5b4c",
-      size: 576,
-      url: "https://api.github.com/repos/codelore-dev/codelore/git/blobs/3b2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a5b4c"
-    },
-    {
-      path: "webapp/src/components",
-      mode: "040000",
-      type: "tree",
-      sha: "2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a5b4c3b",
-      size: 0,
-      url: "https://api.github.com/repos/codelore-dev/codelore/git/trees/2a1b0a9f8e7d6c5b4a3b2c1d0e9f8a7b6a5b4c3b"
-    }
-  ],
-  file_type_distribution: {
-    "tsx": 12,
-    "ts": 5,
-    "css": 1,
-    "json": 2,
-    "md": 1
-  },
-  title: "Codelore: AI-Powered Code Repository Analysis Platform",
+export const sampleApiResponse = {
   repo_info: {
-    id: 123456789,
-    node_id: "R_kgDOG1a2xQ",
-    name: "codelore",
-    full_name: "codelore-dev/codelore",
-    private: false,
+    name: "sample-repository",
+    full_name: "organization/sample-repository",
+    description: "A sample repository demonstrating various programming concepts and patterns",
+    html_url: "https://github.com/organization/sample-repository",
+    stars: 1250,
+    forks: 320,
+    last_updated: "2023-11-15T12:34:56Z",
     owner: {
-      login: "codelore-dev",
-      id: 98765432,
-      node_id: "MDQ6VXNlcjk4NzY1NDMy",
-      avatar_url: "https://avatars.githubusercontent.com/u/98765432?v=4",
-      gravatar_id: "",
-      url: "https://api.github.com/users/codelore-dev",
-      html_url: "https://github.com/codelore-dev",
-      followers_url: "https://api.github.com/users/codelore-dev/followers",
-      following_url: "https://api.github.com/users/codelore-dev/following{/other_user}",
-      gists_url: "https://api.github.com/users/codelore-dev/gists{/gist_id}",
-      starred_url: "https://api.github.com/users/codelore-dev/starred{/owner}{/repo}",
-      subscriptions_url: "https://api.github.com/users/codelore-dev/subscriptions",
-      organizations_url: "https://api.github.com/users/codelore-dev/orgs",
-      repos_url: "https://api.github.com/users/codelore-dev/repos",
-      events_url: "https://api.github.com/users/codelore-dev/events{/privacy}",
-      received_events_url: "https://api.github.com/users/codelore-dev/received_events",
-      type: "Organization",
-      user_view_type: "Organization",
-      site_admin: false
-    },
-    html_url: "https://github.com/codelore-dev/codelore",
-    description: "AI-powered platform for analyzing and generating narratives about code repositories",
-    fork: false,
-    url: "https://api.github.com/repos/codelore-dev/codelore",
-    forks_url: "https://api.github.com/repos/codelore-dev/codelore/forks",
-    keys_url: "https://api.github.com/repos/codelore-dev/codelore/keys{/key_id}",
-    collaborators_url: "https://api.github.com/repos/codelore-dev/codelore/collaborators{/collaborator}",
-    teams_url: "https://api.github.com/repos/codelore-dev/codelore/teams",
-    hooks_url: "https://api.github.com/repos/codelore-dev/codelore/hooks",
-    issue_events_url: "https://api.github.com/repos/codelore-dev/codelore/issues/events{/number}",
-    events_url: "https://api.github.com/repos/codelore-dev/codelore/events",
-    assignees_url: "https://api.github.com/repos/codelore-dev/codelore/assignees{/user}",
-    branches_url: "https://api.github.com/repos/codelore-dev/codelore/branches{/branch}",
-    tags_url: "https://api.github.com/repos/codelore-dev/codelore/tags",
-    blobs_url: "https://api.github.com/repos/codelore-dev/codelore/git/blobs{/sha}",
-    git_tags_url: "https://api.github.com/repos/codelore-dev/codelore/git/tags{/sha}",
-    git_refs_url: "https://api.github.com/repos/codelore-dev/codelore/git/refs{/sha}",
-    trees_url: "https://api.github.com/repos/codelore-dev/codelore/git/trees{/sha}",
-    statuses_url: "https://api.github.com/repos/codelore-dev/codelore/statuses/{sha}",
-    languages_url: "https://api.github.com/repos/codelore-dev/codelore/languages",
-    stargazers_url: "https://api.github.com/repos/codelore-dev/codelore/stargazers",
-    contributors_url: "https://api.github.com/repos/codelore-dev/codelore/contributors",
-    subscribers_url: "https://api.github.com/repos/codelore-dev/codelore/subscribers",
-    subscription_url: "https://api.github.com/repos/codelore-dev/codelore/subscription",
-    commits_url: "https://api.github.com/repos/codelore-dev/codelore/commits{/sha}",
-    git_commits_url: "https://api.github.com/repos/codelore-dev/codelore/git/commits{/sha}",
-    comments_url: "https://api.github.com/repos/codelore-dev/codelore/comments{/number}",
-    issue_comment_url: "https://api.github.com/repos/codelore-dev/codelore/issues/comments{/number}",
-    contents_url: "https://api.github.com/repos/codelore-dev/codelore/contents/{+path}",
-    compare_url: "https://api.github.com/repos/codelore-dev/codelore/compare/{base}...{head}",
-    merges_url: "https://api.github.com/repos/codelore-dev/codelore/merges",
-    archive_url: "https://api.github.com/repos/codelore-dev/codelore/{archive_format}{/ref}",
-    downloads_url: "https://api.github.com/repos/codelore-dev/codelore/downloads",
-    issues_url: "https://api.github.com/repos/codelore-dev/codelore/issues{/number}",
-    pulls_url: "https://api.github.com/repos/codelore-dev/codelore/pulls{/number}",
-    milestones_url: "https://api.github.com/repos/codelore-dev/codelore/milestones{/number}",
-    notifications_url: "https://api.github.com/repos/codelore-dev/codelore/notifications{?since,all,participating}",
-    labels_url: "https://api.github.com/repos/codelore-dev/codelore/labels{/name}",
-    releases_url: "https://api.github.com/repos/codelore-dev/codelore/releases{/id}",
-    deployments_url: "https://api.github.com/repos/codelore-dev/codelore/deployments",
-    created_at: "2023-08-15T10:24:32Z",
-    updated_at: "2023-11-15T14:32:18Z",
-    pushed_at: "2023-11-15T14:32:18Z",
-    git_url: "git://github.com/codelore-dev/codelore.git",
-    ssh_url: "git@github.com:codelore-dev/codelore.git",
-    clone_url: "https://github.com/codelore-dev/codelore.git",
-    svn_url: "https://github.com/codelore-dev/codelore",
-    homepage: "https://codelore.dev",
-    size: 2456,
-    stargazers_count: 187,
-    watchers_count: 187,
-    language: "TypeScript",
-    has_issues: true,
-    has_projects: true,
-    has_downloads: true,
-    has_wiki: false,
-    has_pages: false,
-    has_discussions: true,
-    forks_count: 23,
-    mirror_url: null,
-    archived: false,
-    disabled: false,
-    open_issues_count: 15,
-    license: "MIT",
-    allow_forking: true,
-    is_template: false,
-    web_commit_signoff_required: false,
-    topics: [
-      "ai",
-      "code-analysis",
-      "documentation",
-      "github-api",
-      "nextjs",
-      "react",
-      "typescript"
+      login: "organization",
+      avatar_url: "https://avatars.githubusercontent.com/u/12345678",
+      html_url: "https://github.com/organization"
+    }
+  },
+  narrative: {
+    summary: "This repository contains a comprehensive web application that demonstrates modern software architecture and design patterns. It features a React frontend with TypeScript, a Python backend using FastAPI, and includes thorough documentation and testing.",
+    key_features: [
+      "Component-based frontend architecture",
+      "RESTful API with OpenAPI documentation",
+      "Automated testing suite with 90% coverage",
+      "CI/CD pipeline with GitHub Actions",
+      "Containerized deployment with Docker"
     ],
-    visibility: "public",
-    forks: 23,
-    open_issues: 15,
-    watchers: 187,
-    default_branch: "main",
-    permissions: {
-      admin: false,
-      maintain: false,
-      push: false,
-      triage: false,
-      pull: true
+    insights: "The codebase demonstrates good separation of concerns and follows SOLID principles. There's a strong emphasis on type safety and documentation. The project structure is well-organized, making it easy for new contributors to understand the codebase."
+  },
+  analysis_details: {
+    languages: [
+      { name: "TypeScript", percentage: 45 },
+      { name: "Python", percentage: 35 },
+      { name: "CSS", percentage: 12 },
+      { name: "HTML", percentage: 8 }
+    ],
+    unique_classes: 34,
+    unique_functions: 128,
+    analyzed_files: 76,
+    complexity_score: 3.2,
+    maintainability_score: 4.1,
+    dependencies: [
+      { name: "React", version: "18.2.0" },
+      { name: "FastAPI", version: "0.95.1" },
+      { name: "TypeScript", version: "5.0.4" },
+      { name: "Tailwind CSS", version: "3.3.2" }
+    ]
+  },
+  file_type_distribution: [
+    { type: "Component", count: 28 },
+    { type: "Utility", count: 15 },
+    { type: "API Route", count: 12 },
+    { type: "Test", count: 18 },
+    { type: "Configuration", count: 8 },
+    { type: "Documentation", count: 5 }
+  ],
+  repository_structure: [
+    {
+      name: "src",
+      type: "directory",
+      children: [
+        {
+          name: "components",
+          type: "directory",
+          description: "React components for the UI"
+        },
+        {
+          name: "pages",
+          type: "directory",
+          description: "Next.js page components"
+        },
+        {
+          name: "utils",
+          type: "directory",
+          description: "Utility functions and helpers"
+        }
+      ]
     },
-    temp_clone_token: "",
-    allow_squash_merge: true,
-    allow_merge_commit: true,
-    allow_rebase_merge: true,
-    allow_auto_merge: false,
-    delete_branch_on_merge: true,
-    allow_update_branch: true,
-    use_squash_pr_title_as_default: false,
-    squash_merge_commit_message: "COMMIT_MESSAGES",
-    squash_merge_commit_title: "COMMIT_OR_PR_TITLE",
-    merge_commit_message: "PR_TITLE",
-    merge_commit_title: "MERGE_MESSAGE",
-    security_and_analysis: {
-      secret_scanning: {
-        status: "enabled"
-      },
-      secret_scanning_push_protection: {
-        status: "enabled"
-      },
-      dependabot_security_updates: {
-        status: "enabled"
-      }
+    {
+      name: "api",
+      type: "directory",
+      children: [
+        {
+          name: "routes",
+          type: "directory",
+          description: "API endpoint definitions"
+        },
+        {
+          name: "models",
+          type: "directory",
+          description: "Data models and schemas"
+        }
+      ]
     },
-    network_count: 23,
-    subscribers_count: 12
-  }
+    {
+      name: "tests",
+      type: "directory",
+      description: "Unit and integration tests"
+    },
+    {
+      name: "docs",
+      type: "directory",
+      description: "Project documentation"
+    }
+  ]
 }; 
