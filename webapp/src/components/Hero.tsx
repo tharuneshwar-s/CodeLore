@@ -32,7 +32,7 @@ export default function Hero() {
     try {
       // Use axios for the API call and handle CORS
       const response = await axios.post(
-        'http://127.0.0.1:8000/analyze',
+        'https://codelore.onrender.com/analyze',
         { repo_url: repoUrl },
         {
           headers: {
