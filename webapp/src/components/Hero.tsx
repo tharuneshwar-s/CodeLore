@@ -3,15 +3,24 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Hero() {
   const [repoUrl, setRepoUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
+  const { user, session, signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is authenticated, if not redirect to auth flow
+    if (!user) {
+      signIn();
+      return;
+    }
+    
     setIsLoading(true);
     setErrorMessage('');
 
@@ -31,14 +40,24 @@ export default function Hero() {
 
     try {
       // Use axios for the API call and handle CORS
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
+      // Include GitHub token from session if available
+      const requestData = { 
+        repo_url: repoUrl,
+        user_token: session?.provider_token || undefined,
+        user_id: session?.user.id || undefined,
+      };
+      
       const response = await axios.post(
-        'https://codelore.onrender.com/analyze',
-        { repo_url: repoUrl },
+        `${apiUrl}/analyze`,
+        requestData,
         {
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
-          // withCredentials: true, // Uncomment if backend requires credentials/cookies
+          timeout: 30000, // 30 second timeout
         }
       );
       const data = response.data;
@@ -108,7 +127,9 @@ export default function Hero() {
                     <button 
                       type="submit"
                       disabled={isLoading}
-                      className="relative sm:mt-0 w-full sm:w-auto inline-flex items-center justify-center px-6 py-[14px] text-sm font-medium sm:text-base text-white bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 rounded-lg sm:rounded-l-none shadow-md shadow-indigo-900/20 hover:shadow-lg hover:shadow-indigo-600/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:from-indigo-600 disabled:hover:to-indigo-800 disabled:hover:shadow-md"
+                      className={`relative sm:mt-0 w-full sm:w-auto inline-flex items-center justify-center px-6 py-[14px] text-sm font-medium sm:text-base text-white 
+                        ${user ? 'bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700' : 'bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700'}
+                        rounded-lg sm:rounded-l-none shadow-md shadow-indigo-900/20 hover:shadow-lg hover:shadow-indigo-600/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:from-indigo-600 disabled:hover:to-indigo-800 disabled:hover:shadow-md`}
                     >
                       {isLoading ? (
                         <span className="flex items-center">
@@ -120,7 +141,7 @@ export default function Hero() {
                         </span>
                       ) : (
                         <>
-                          <span>Analyze</span>
+                          <span>{user ? 'Analyze' : 'Sign in to analyze'}</span>
                           <svg className="ml-2 -mr-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                           </svg>
@@ -133,7 +154,9 @@ export default function Hero() {
                   {errorMessage || 'Please enter a valid GitHub repository URL.'}
                 </p>
                 <p className="mt-3 text-sm text-slate-400">
-                  Enter a GitHub repository URL to start the analysis. Public repositories only.
+                  {user 
+                    ? "Enter a GitHub repository URL to start the analysis. Public repositories only." 
+                    : "Sign in with GitHub to analyze repositories. GitHub authentication is required."}
                 </p>
               </div>
               
@@ -238,4 +261,4 @@ export default function Hero() {
       `}</style>
     </div>
   );
-} 
+}

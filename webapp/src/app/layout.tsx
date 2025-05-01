@@ -3,6 +3,7 @@ import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { AuthProvider } from '@/context/AuthContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -30,12 +31,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full scroll-smooth ${inter.variable} ${poppins.variable}`}>
       <body className={`flex flex-col min-h-screen font-sans antialiased`}>
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )
-} 
+}

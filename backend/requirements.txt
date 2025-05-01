@@ -6,3 +6,4 @@ requests # For API calls
 google-generativeai
 supabase
 # GitPython is NOT needed for this version
+plantuml>=0.3.0

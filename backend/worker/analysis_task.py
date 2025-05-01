@@ -1,6 +1,8 @@
 # worker/analysis_task.py
-from celery import shared_task # Use shared_task as celery instance might not be available here directly
-from services import github_api, llm_handler, code_parser # Import helpers from services
+# Use shared_task as celery instance might not be available here directly
+from celery import shared_task
+# Import helpers from services
+from services import github_api, llm_handler, code_parser
 import supabase_client
 import sys
 from typing import Dict, Any, List, Set
@@ -15,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Constants ---
-MAX_FILES_TO_PARSE = 200 # Limit API calls for content
+MAX_FILES_TO_PARSE = 500  # Limit API calls for content
 IMPORTANT_FILES = [
     # Python
     "requirements.txt", "Pipfile", "pyproject.toml",
@@ -25,27 +27,37 @@ IMPORTANT_FILES = [
     "pom.xml", "build.gradle", "settings.gradle", "build.gradle.kts", "gradle.properties", "web.xml",
     # General
     "Dockerfile"
-] # For framework detection
+]  # For framework detection
 
 # --- Celery Task Definition ---
 print("[WALKTHROUGH] worker/analysis_task.py: Defining Celery task 'run_codelore_analysis'...")
 sys.stdout.flush()
 
 # Use shared_task, bind=True to get 'self'
+
+
 @shared_task(bind=True)
-def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
+def run_codelore_analysis(self, repo_url: str, user_token: str = None) -> Dict[str, Any]:
     """
     Celery task to analyze a Git repository *via GitHub API* and generate a narrative.
     Orchestrates API calls, parsing, LLM interaction, and saves results to Supabase.
+
+    Args:
+        repo_url: URL of the GitHub repository to analyze
+        user_token: Optional GitHub user token for authenticated API calls
     """
-    task_id = self.request.id # Get the REAL task ID from Celery
+    task_id = self.request.id  # Get the REAL task ID from Celery
     if not task_id:
         # Should not happen with bind=True, but as a fallback
         import uuid
         task_id = str(uuid.uuid4())
-        print(f"[WALKTHROUGH][TASK {task_id}] WARNING: Could not get task ID from request, generated UUID.")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] WARNING: Could not get task ID from request, generated UUID.")
 
-    print(f"\n[WALKTHROUGH][TASK {task_id}] Task started for URL: {repo_url} (API Version)")
+    print(
+        f"\n[WALKTHROUGH][TASK {task_id}] Task started for URL: {repo_url} (API Version)")
+    print(
+        f"[WALKTHROUGH][TASK {task_id}] Using {'user-provided' if user_token else 'default'} GitHub token")
     sys.stdout.flush()
 
     # --- Initial Status Update ---
@@ -58,6 +70,7 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             "result": None,       # Clear previous result if any
             "progress": 10,
             "error": None,        # No error at this point
+            "user_id": None,  # Optional user ID if needed
         }
     )
     print(f"[WALKTHROUGH][TASK {task_id}] Initial status saved to Supabase.")
@@ -66,10 +79,11 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
     # --- Pre-checks ---
     if not llm_handler.gemini_model:
         error_msg = "Gemini API key not configured or model init failed."
-        print(f"[WALKTHROUGH][TASK {task_id}] ERROR: {error_msg} Failing task.")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] ERROR: {error_msg} Failing task.")
         sys.stdout.flush()
         supabase_client.update_analysis_status(task_id, 'FAILURE', error_msg)
-        raise RuntimeError(error_msg) # Re-raise to fail Celery task
+        raise RuntimeError(error_msg)  # Re-raise to fail Celery task
 
     owner_repo = github_api.get_owner_repo(repo_url)
     if not owner_repo:
@@ -77,7 +91,7 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         print(f"[WALKTHROUGH][TASK {task_id}] ERROR: {error_msg}")
         sys.stdout.flush()
         supabase_client.update_analysis_status(task_id, 'FAILURE', error_msg)
-        raise ValueError(error_msg) # Re-raise
+        raise ValueError(error_msg)  # Re-raise
     owner, repo_name = owner_repo
 
     try:
@@ -93,10 +107,12 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             }
         )
         # --- 1. Get Default Branch ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 1: Getting default branch...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 1: Getting default branch...")
         sys.stdout.flush()
-        default_branch = github_api.get_default_branch(owner, repo_name)
-        
+        default_branch = github_api.get_default_branch(
+            owner, repo_name, user_token)
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -110,11 +126,13 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         # --- 2. Get File Tree ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 2: Getting repository file tree...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 2: Getting repository file tree...")
         sys.stdout.flush()
-        repo_tree = github_api.get_repo_tree(owner, repo_name, default_branch)
+        repo_tree = github_api.get_repo_tree(
+            owner, repo_name, default_branch, user_token)
         # No need to fail if tree is empty, analysis will just be sparse
-        
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -128,7 +146,8 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         # --- 3. Analyze Code In Memory ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 3: Analyzing Python files (max {MAX_FILES_TO_PARSE})...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 3: Analyzing Python files (max {MAX_FILES_TO_PARSE})...")
         sys.stdout.flush()
         all_functions: List[str] = []
         all_classes: List[str] = []
@@ -137,8 +156,9 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         total_py_lines: int = 0
         total_java_lines: int = 0
         parsed_files_count: int = 0
-        file_contents_for_framework_detection: Dict[str, str] = {} # Store content of important files
-        
+        # Store content of important files
+        file_contents_for_framework_detection: Dict[str, str] = {}
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -151,13 +171,16 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             }
         )
 
-        python_files_in_tree = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '').endswith('.py')]
-        java_files_in_tree = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '').endswith('.java')]
-        other_important_files = [item for item in repo_tree if item.get('type') == 'blob' and item.get('path', '') in IMPORTANT_FILES]
+        python_files_in_tree = [item for item in repo_tree if item.get(
+            'type') == 'blob' and item.get('path', '').endswith('.py')]
+        java_files_in_tree = [item for item in repo_tree if item.get(
+            'type') == 'blob' and item.get('path', '').endswith('.java')]
+        other_important_files = [item for item in repo_tree if item.get(
+            'type') == 'blob' and item.get('path', '') in IMPORTANT_FILES]
 
         print(f"[WALKTHROUGH][TASK {task_id}] Found {len(python_files_in_tree)} Python files, {len(java_files_in_tree)} Java files, and {len(other_important_files)} other important files.")
         sys.stdout.flush()
-        
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -172,12 +195,16 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
 
         # Analyze Python files
         for file_item in python_files_in_tree:
-            if parsed_files_count >= MAX_FILES_TO_PARSE: break
+            if parsed_files_count >= MAX_FILES_TO_PARSE:
+                break
             file_path = file_item.get('path')
-            if not file_path: continue
-            content = github_api.get_file_content(owner, repo_name, file_path, default_branch)
+            if not file_path:
+                continue
+            content = github_api.get_file_content(
+                owner, repo_name, file_path, default_branch, user_token)
             if content:
-                analysis_result = code_parser.analyze_python_content(content, filename=file_path)
+                analysis_result = code_parser.analyze_python_content(
+                    content, filename=file_path)
                 if analysis_result:
                     analyzed_files_paths.append(file_path)
                     all_functions.extend(analysis_result["functions"])
@@ -191,12 +218,16 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
 
         # Analyze Java files
         for file_item in java_files_in_tree:
-            if parsed_files_count >= MAX_FILES_TO_PARSE: break
+            if parsed_files_count >= MAX_FILES_TO_PARSE:
+                break
             file_path = file_item.get('path')
-            if not file_path: continue
-            content = github_api.get_file_content(owner, repo_name, file_path, default_branch)
+            if not file_path:
+                continue
+            content = github_api.get_file_content(
+                owner, repo_name, file_path, default_branch, user_token)
             if content:
-                analysis_result = code_parser.analyze_java_content(content, filename=file_path)
+                analysis_result = code_parser.analyze_java_content(
+                    content, filename=file_path)
                 if analysis_result:
                     analyzed_files_paths.append(file_path)
                     all_functions.extend(analysis_result["functions"])
@@ -211,7 +242,8 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         for file_item in other_important_files:
             file_path = file_item.get('path')
             if file_path and file_path not in file_contents_for_framework_detection:
-                content = github_api.get_file_content(owner, repo_name, file_path, default_branch)
+                content = github_api.get_file_content(
+                    owner, repo_name, file_path, default_branch, user_token)
                 if content:
                     file_contents_for_framework_detection[file_path] = content
 
@@ -240,13 +272,14 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         sys.stdout.flush()
 
         # --- 3b. Detect Frameworks ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 3b: Detecting frameworks...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 3b: Detecting frameworks...")
         sys.stdout.flush()
         detected_frameworks = code_parser.detect_frameworks_from_files(
             file_contents_for_framework_detection,
             # imports=all_imports # Pass Python imports for better detection
         )
-        
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -260,10 +293,12 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         # --- 4. Get Latest Commit Info ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 4: Getting latest commit info...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 4: Getting latest commit info...")
         sys.stdout.flush()
-        latest_commit_info = github_api.get_latest_commit_info(owner, repo_name, default_branch)
-        
+        latest_commit_info = github_api.get_latest_commit_info(
+            owner, repo_name, default_branch, user_token)
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -277,11 +312,12 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         # --- 5. Get General Repo Info ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 5: Getting general repo info...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 5: Getting general repo info...")
         sys.stdout.flush()
-        repo_info = github_api.get_repo_info(owner, repo_name)
-        title = repo_info.get("name", repo_name) # Use repo name as title
-        
+        repo_info = github_api.get_repo_info(owner, repo_name, user_token)
+        title = repo_info.get("name", repo_name)  # Use repo name as title
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -295,14 +331,17 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         # --- 6. Calculate File Type Distribution ---
-        print(f"[WALKTHROUGH][TASK {task_id}] Step 6: Calculating file type distribution...")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Step 6: Calculating file type distribution...")
         sys.stdout.flush()
         file_type_distribution = {}
         for item in repo_tree:
             if item.get('type') == 'blob':
                 path = item.get('path', '')
-                ext = path.split('.')[-1].lower() if '.' in path else 'no_extension'
-                file_type_distribution[ext] = file_type_distribution.get(ext, 0) + 1
+                ext = path.split(
+                    '.')[-1].lower() if '.' in path else 'no_extension'
+                file_type_distribution[ext] = file_type_distribution.get(
+                    ext, 0) + 1
 
         # --- 7. Generate Narrative ---
         print(f"[WALKTHROUGH][TASK {task_id}] Step 7: Generating narrative...")
@@ -314,10 +353,11 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             'repo_name': repo_name,
             'detected_frameworks': detected_frameworks,
         }
-        narrative = llm_handler.generate_narrative(narrative_input_data, repo_url)
+        narrative = llm_handler.generate_narrative(
+            narrative_input_data, repo_url)
         print(f"[WALKTHROUGH][TASK {task_id}] Narrative generation complete.")
         sys.stdout.flush()
-        
+
         supabase_client.update_table_data(
             task_id,
             {
@@ -345,10 +385,11 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
             "title": title,
             "repo_info": repo_info,
             "detected_frameworks": detected_frameworks,
-            
+
         }
 
-        print(f"[WALKTHROUGH][TASK {task_id}] Analysis completed successfully. Saving final result to Supabase.")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] Analysis completed successfully. Saving final result to Supabase.")
         sys.stdout.flush()
         # Save all data in a single call with the final SUCCESS state
         save_response = supabase_client.update_table_data(
@@ -364,8 +405,10 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
         )
 
         if not save_response or not save_response.data:
-            print(f"[WALKTHROUGH][TASK {task_id}] WARNING: Failed to save final result to Supabase.")
-            logger.warning(f"Task {task_id} completed but failed to save final result to Supabase.")
+            print(
+                f"[WALKTHROUGH][TASK {task_id}] WARNING: Failed to save final result to Supabase.")
+            logger.warning(
+                f"Task {task_id} completed but failed to save final result to Supabase.")
 
         return {"status": "SUCCESS", "task_id": task_id, "message": "Analysis complete. Result stored."}
 
@@ -373,20 +416,25 @@ def run_codelore_analysis(self, repo_url: str) -> Dict[str, Any]:
     except (requests.exceptions.RequestException, ValueError, RuntimeError) as e:
         error_type_name = type(e).__name__
         error_message = str(e)
-        print(f"[WALKTHROUGH][TASK {task_id}] ERROR (Expected - {error_type_name}): Task failed: {error_message}")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] ERROR (Expected - {error_type_name}): Task failed: {error_message}")
         sys.stdout.flush()
-        logger.error(f"[{task_id}] Task failed for URL {repo_url} with expected error: {e}", exc_info=True)
-        supabase_client.update_analysis_status(task_id, 'FAILURE', error_message)
-        raise e # Re-raise for Celery
+        logger.error(
+            f"[{task_id}] Task failed for URL {repo_url} with expected error: {e}", exc_info=True)
+        supabase_client.update_analysis_status(
+            task_id, 'FAILURE', error_message)
+        raise e  # Re-raise for Celery
     except Exception as e:
         error_type_name = type(e).__name__
         error_message = str(e)
-        print(f"[WALKTHROUGH][TASK {task_id}] ERROR (Unexpected - {error_type_name}): Task failed: {error_message}")
+        print(
+            f"[WALKTHROUGH][TASK {task_id}] ERROR (Unexpected - {error_type_name}): Task failed: {error_message}")
         sys.stdout.flush()
-        logger.error(f"[{task_id}] Task failed unexpectedly for URL {repo_url}: {e}", exc_info=True)
-        supabase_client.update_analysis_status(task_id, 'FAILURE', 'An unexpected server error occurred during analysis.')
-        raise e # Re-raise for Celery
-
+        logger.error(
+            f"[{task_id}] Task failed unexpectedly for URL {repo_url}: {e}", exc_info=True)
+        supabase_client.update_analysis_status(
+            task_id, 'FAILURE', 'An unexpected server error occurred during analysis.')
+        raise e  # Re-raise for Celery
 
 
 print("[WALKTHROUGH] worker/analysis_task.py: Finished loading.")
