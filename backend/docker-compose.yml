@@ -1,9 +1,20 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
-    command: web
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # AMQP protocol port
+      - "15672:15672"  # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: on-failure
+    
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
     environment:
@@ -17,8 +28,9 @@ services:
     restart: on-failure
 
   worker:
-    build: .
-    command: worker
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - RABBITMQ_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
@@ -27,17 +39,8 @@ services:
       - .:/app
     depends_on:
       - rabbitmq
-      - web
-    restart: on-failure
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"  # AMQP protocol port
-      - "15672:15672"  # Management UI port
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - api
     restart: on-failure
 
 volumes:
-  rabbitmq_data: 
+  rabbitmq_data:

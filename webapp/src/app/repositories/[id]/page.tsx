@@ -43,7 +43,6 @@ export default function RepositoryPage() {
 
   const [repository, setRepository] = useState<Repository | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
   const [copied, setCopied] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
