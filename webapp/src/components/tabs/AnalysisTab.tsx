@@ -84,7 +84,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionD
                                   <div className="mb-3">
                                     <h4 className="font-medium text-gray-900 mb-1">Related Components</h4>
                                     <div className="flex flex-wrap gap-2">
-                                      {classDetails[className].related_components.map((component, idx) => (
+                                      {classDetails[className].related_components.map((component:any, idx:any) => (
                                         <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
                                           {component}
                                         </span>
@@ -197,7 +197,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionD
                                 {/* Usage patterns */}
                                 <h4 className="font-medium text-gray-900 mb-1">Usage in codebase</h4>
                                 <ul className="list-disc pl-4 space-y-1 text-sm mb-3">
-                                  {functionDetails[functionName]?.usages.map((usage, usageIndex) => (
+                                  {functionDetails[functionName]?.usages.map((usage:any, usageIndex:any) => (
                                     <li key={usageIndex} dangerouslySetInnerHTML={{ __html: usage }}></li>
                                   ))}
                                 </ul>
@@ -207,7 +207,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionD
                                   <div className="mb-3">
                                     <h4 className="font-medium text-gray-900 mb-1">Related Components</h4>
                                     <div className="flex flex-wrap gap-2">
-                                      {functionDetails[functionName].related_components.map((component, idx) => (
+                                      {functionDetails[functionName].related_components.map((component:any, idx:any) => (
                                         <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
                                           {component}
                                         </span>
