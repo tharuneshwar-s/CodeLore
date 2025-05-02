@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import supabase from '@/utils/supabase';
 import { Session, User } from '@supabase/supabase-js';
-import { redirect } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
@@ -53,6 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async () => {
+    
     try {
       // Get the current origin from the browser window object
       let origin = '';
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
 
-      alert(`Redirecting to GitHub for authentication...,: ${error} and ${data}`,);
+      alert(`Redirecting to GitHub for authentication...,: ${error} and ${data.url}`,);
 
       if (error) {
         console.error('GitHub authentication error:', error);
