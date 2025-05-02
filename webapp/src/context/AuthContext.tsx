@@ -69,6 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
 
+      console.log('GitHub sign-in data:', data);
+      console.log('GitHub sign-in error:', error);
+
       if (data.url) {
         redirect(data.url); // Redirect to GitHub for authentication
       }
