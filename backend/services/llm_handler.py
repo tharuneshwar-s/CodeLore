@@ -16,7 +16,8 @@ gemini_model = None
 try:
     print("[WALKTHROUGH] llm_handler.py: Configuring Gemini API...")
     sys.stdout.flush()
-    api_key = os.getenv("GEMINI_API_KEY")
+    # os.getenv("GEMINI_API_KEY")
+    api_key = "AIzaSyDFzeEo9dTyyEWzAD_KB-mXLP7Uh0s4PDM"
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment variables.")
     genai.configure(api_key=api_key)
