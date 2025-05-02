@@ -53,10 +53,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async () => {
     try {
+      // Determine the correct redirect URL based on environment
+      // In browser environments, use the current origin as the base URL
+      // This ensures it works both locally and in production
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+      
       await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
+          redirectTo: `${baseUrl}/auth/callback`,
           scopes: 'repo' // Request repository access
         }
       });
