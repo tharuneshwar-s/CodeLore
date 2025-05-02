@@ -16,9 +16,11 @@ Codelore is an AI-powered platform for analyzing and understanding code reposito
 ## Demo
 
 <p align="center">
-  <a href="samples/samplevideo.mp4">
-    <img src="https://img.shields.io/badge/Watch-Demo_Video-FF0000?logo=youtube&logoColor=white" alt="Demo Video" width="200"/>
-  </a>
+  
+
+https://github.com/user-attachments/assets/efc02822-7075-4d2a-b828-022c81a7b2b7
+
+
 </p>
 
 Check out our [sample video](samples/samplevideo.mp4) to see Codelore in action!
