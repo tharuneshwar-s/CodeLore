@@ -33,6 +33,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+node/
 codelore-env/
 
 # VS Code
@@ -85,3 +86,4 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/ 
+node_modules/
