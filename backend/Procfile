@@ -1,1 +1,1 @@
-worker: celery -A worker.analysis_task worker --concurrency=100 --loglevel=info
+web: celery -A worker.analysis_task worker --concurrency=100 --loglevel=info
