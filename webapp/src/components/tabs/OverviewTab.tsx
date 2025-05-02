@@ -19,7 +19,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ data, formatDate } : any) => 
     value: count,
   }));
 
-  const totalFiles = Object.values(data.file_type_distribution).reduce((a: any, b: any) => a + b, 0);
+  const totalFiles : any = Object.values(data.file_type_distribution).reduce((a: any, b: any) => a + b, 0);
 
   return (
     <div className="space-y-6 text-white">
@@ -117,31 +117,31 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ data, formatDate } : any) => 
 
             {/* File type distribution bars */}
             <div className="mt-4 space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-              {Object.entries(data.file_type_distribution)
+                {(Object.entries(data.file_type_distribution) as any)
                 .sort((a: any, b: any) => b[1] - a[1])
-                .map(([type, count], index: any) => (
+                .map(([type, count]: any, index: any) => (
                   <div key={index} className="group hover:bg-gray-50 p-2 rounded transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-gray-800 font-medium flex items-center">
-                        <span className="h-3 w-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                        {type}
-                      </span>
-                      <div className="flex items-center">
-                        <span className="text-gray-700 mr-2 font-medium">{count}</span>
-                        <span className="text-indigo-600 text-xs font-semibold px-1.5 py-0.5 bg-indigo-50 rounded-full">
-                          {((count / totalFiles) * 100).toFixed(1)}%
-                        </span>
-                      </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-gray-800 font-medium flex items-center">
+                    <span className="h-3 w-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                    {type}
+                    </span>
+                    <div className="flex items-center">
+                    <span className="text-gray-700 mr-2 font-medium">{count}</span>
+                    <span className="text-indigo-600 text-xs font-semibold px-1.5 py-0.5 bg-indigo-50 rounded-full">
+                      {((count / totalFiles) * 100).toFixed(1)}%
+                    </span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${(count / Math.max(...Object.values(data.file_type_distribution))) * 100}%`,
-                          backgroundColor: COLORS[index % COLORS.length]
-                        }}
-                      ></div>
-                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                    className="h-2 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${(count / Math.max(...Object.values(data.file_type_distribution) as number[])) * 100}%`,
+                      backgroundColor: COLORS[index % COLORS.length]
+                    }}
+                    ></div>
+                  </div>
                   </div>
                 ))}
             </div>
