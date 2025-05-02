@@ -64,17 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const {data, error} = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${siteUrl}/auth/callback`,
+          // redirectTo: `${siteUrl}/auth/callback`,
           scopes: 'repo', // Request repository access
         }
       });
 
-      console.log('GitHub sign-in data:', data);
-      console.log('GitHub sign-in error:', error);
-
-      if (data.url) {
-        redirect(data.url); // Redirect to GitHub for authentication
-      }
     } catch (error) {
       console.error('Error signing in with GitHub:', error);
     }
