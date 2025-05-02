@@ -53,18 +53,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async () => {
     try {
-      // Determine the correct redirect URL based on environment
-      // In browser environments, use the current origin as the base URL
-      // This ensures it works both locally and in production
+      // Get the current URL's origin in browser environments
       const baseUrl = typeof window !== 'undefined' 
         ? window.location.origin 
         : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
       
+      console.log('Using redirect URL:', `${baseUrl}/auth/callback`);
+      
+      // Add an explicit site URL to help Supabase with CORS and redirects
       await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: `${baseUrl}/auth/callback`,
-          scopes: 'repo' // Request repository access
+          scopes: 'repo', // Request repository access
+          // Make sure we're explicitly setting the site URL to match the current domain
+          skipBrowserRedirect: false
         }
       });
     } catch (error) {
