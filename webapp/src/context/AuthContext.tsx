@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import supabase from '@/utils/supabase';
 import { Session, User } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 
 type AuthContextType = {
   user: User | null;
@@ -55,12 +54,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async () => {
     try {
-      // Get the current URL's origin in browser environments
-      const origin = headers().get('origin')
+      // Get the current origin from the browser window object
+      let origin = '';
+      
+      // Only access window if we're in the browser
+      if (typeof window !== 'undefined') {
+        origin = window.location.origin;
+      } else {
+        // Fallback to environment variable for SSR
+        origin = process.env.NEXT_PUBLIC_APP_URL || '';
+      }
       
       console.log('Using site URL for authentication:', origin);
       
-      const { error, data } =  await supabase.auth.signInWithOAuth({
+      // Make sure origin is not empty
+      if (!origin) {
+        console.error('Origin URL is empty. Please check NEXT_PUBLIC_APP_URL environment variable.');
+        return;
+      }
+      
+      const { error, data } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: `${origin}/auth/callback`,
@@ -69,11 +82,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        console.log(error);
-      } else {
-        return redirect(data.url);
+        console.error('GitHub authentication error:', error);
+      } else if (data?.url) {
+        // Use window.location for client-side redirects instead of Next's redirect
+        window.location.href = data.url;
       }
-
     } catch (error) {
       console.error('Error signing in with GitHub:', error);
     }
