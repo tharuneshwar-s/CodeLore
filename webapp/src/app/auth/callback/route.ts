@@ -1,46 +1,45 @@
-import supabase from '@/utils/supabase';
-import { NextResponse } from 'next/server';
+import supabase from '@/utils/supabase'
+import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const { searchParams, origin } = new URL(request.url)
+  console.log('\n\n\nAuth callback URL:', request.url)
+  console.log(searchParams, origin)
+  
+  const code = searchParams.get('code')
+  // if "next" is in param, use it as the redirect URL
+  const next = searchParams.get('next') ?? '/'
+
+  alert(`Auth callback URL: ${request.url}`)
 
   if (code) {
     try {
-      // Exchange the code for a session
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        console.error('Error exchanging code for session:', error);
-        return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      
+      if (!error) {
+        const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+        const isLocalEnv = process.env.NODE_ENV === 'development'
+        
+        // Force using current origin for production, ignoring any site_url in the state parameter
+        // This ensures the redirect stays on the current deployment URL, not localhost
+        if (isLocalEnv) {
+          // Local development - use the origin directly
+          return NextResponse.redirect(`${origin}${next}`)
+        } else if (forwardedHost) {
+          // Production with forwarded host header (from load balancer/proxy)
+          return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        } else {
+          // Production without forwarded host
+          return NextResponse.redirect(`${origin}${next}`)
+        }
+      } else {
+        console.error('Error exchanging code for session:', error)
       }
-      // Set Supabase session cookies for SSR
-      const response = NextResponse.redirect(next);
-      if (data?.session) {
-        // Set cookies for access_token and refresh_token
-        response.cookies.set({
-          name: 'sb-access-token',
-          value: data.session.access_token,
-          httpOnly: true,
-          path: '/',
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-        });
-        response.cookies.set({
-          name: 'sb-refresh-token',
-          value: data.session.refresh_token,
-          httpOnly: true,
-          path: '/',
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-        });
-      }
-      return response;
     } catch (err) {
-      console.error('Authentication callback error:', err);
-      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+      console.error('Authentication callback error:', err)
     }
   }
-  // If no code, redirect to error page
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+
+  // return the user to an error page with instructions
+  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
