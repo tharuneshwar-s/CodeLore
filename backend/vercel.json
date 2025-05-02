@@ -1,10 +1,13 @@
 {
-    "devCommand": "uvicorn api.main:app --host 0.0.0.0 --port 3000",
+  "devCommand": "uvicorn api.main:app --host 0.0.0.0 --port 3000",
 
   "builds": [
     {
       "src": "run_api.py",
-      "use": "@vercel/python"
+      "use": "@now/python",
+      "config": {
+        "installCommand": "pip install -r requirements.txt"
+      }
     }
   ],
   "routes": [
@@ -12,5 +15,10 @@
       "src": "/(.*)",
       "dest": "run_api.py"
     }
-  ]
+  ],
+  "functions": {
+    "api/**": {
+      "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
+    }
+  }
 }
