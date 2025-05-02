@@ -23,7 +23,12 @@ export default function AuthCallback() {
         // Check if we have a session
         if (data?.session) {
           // User is signed in, redirect to home page
-          router.push('/');
+          // Use the current origin to construct the absolute URL
+          // This ensures we stay on the same domain (Vercel or localhost)
+          console.log('Authentication successful, redirecting to homepage');
+          
+          // Use window.location for a full page navigation to ensure we stay on the current domain
+          window.location.href = `${window.location.origin}/`;
         } else {
           setError('No session found after authentication.');
         }
@@ -54,7 +59,7 @@ export default function AuthCallback() {
             <p className="mt-4 text-lg font-medium text-red-800">Authentication error</p>
             <p className="mt-2 text-slate-600">{error}</p>
             <button 
-              onClick={() => router.push('/')}
+              onClick={() => window.location.href = `${window.location.origin}/`}
               className="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             >
               Return to Homepage
