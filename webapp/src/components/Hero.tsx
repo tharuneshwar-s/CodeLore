@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 
@@ -18,7 +18,8 @@ export default function Hero() {
     // Check if user is authenticated, if not redirect to auth flow
     if (!user) {
       signIn();
-      return;
+      redirect('https://codelore.vercel.app')
+      // return;
     }
 
     console.log("\n\n\nprocess.env.NEXT_PUBLIC_API_URL : ",process.env.NEXT_PUBLIC_API_URL )
