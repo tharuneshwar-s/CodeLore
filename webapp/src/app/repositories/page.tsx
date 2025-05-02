@@ -54,7 +54,7 @@ export default function RepositoriesPage() {
                 const { data: commonData, error: commonError } = await supabase
                     .from('repo_analysis')
                     .select('*')
-                    .in('task_id', ['0181ba20-ab1c-4cbd-99ac-a8573cec9229', '270a43be-63b5-4432-847a-be3032c6d2f3'])
+                    .in('task_id', ['05085ac6-10a2-4fef-905c-747fedbab88b', '74c55749-5cae-486a-bc0d-1cdea9b6a1a5'])
 
                 if (commonError) {
                     throw commonError;
