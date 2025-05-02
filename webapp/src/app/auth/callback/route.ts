@@ -18,13 +18,13 @@ export async function GET(request: Request) {
       
       if (!error) {
         const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
-        const isLocalEnv = process.env.NODE_ENV === 'development'
+        const isLocalEnv = true
         
         // Force using current origin for production, ignoring any site_url in the state parameter
         // This ensures the redirect stays on the current deployment URL, not localhost
         if (isLocalEnv) {
           // Local development - use the origin directly
-          return NextResponse.redirect(`${origin}${next}`)
+          return NextResponse.redirect(`https://codelore.vercel.app`)
         } else if (forwardedHost) {
           // Production with forwarded host header (from load balancer/proxy)
           return NextResponse.redirect(`https://${forwardedHost}${next}`)
