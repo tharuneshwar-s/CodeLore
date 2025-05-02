@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
 
-      alert(`Redirecting to GitHub for authentication...,: ${error} and ${data.url}`,);
+      // alert(`Redirecting to GitHub for authentication...,: ${error} and ${data.url}`,);
 
       if (error) {
         console.error('GitHub authentication error:', error);
