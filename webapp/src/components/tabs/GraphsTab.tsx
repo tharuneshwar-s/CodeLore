@@ -52,7 +52,7 @@ interface UmlData {
     error?: string;
 }
 
-const GraphsTab: React.FC<GraphsTabProps> = ({ data }) => {
+const GraphsTab: React.FC<GraphsTabProps> = ({ data }: any) => {
     const [graphData, setGraphData] = useState<GraphData | null>(null);
     const [umlData, setUmlData] = useState<UmlData | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);

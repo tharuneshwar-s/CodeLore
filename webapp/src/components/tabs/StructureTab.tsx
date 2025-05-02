@@ -222,7 +222,7 @@ const TreeView: React.FC<{ items: TreeItem[] }> = ({ items }) => {
     );
 };
 
-const StructureTab: React.FC<StructureTabProps> = ({ data }) => {
+const StructureTab: React.FC<StructureTabProps> = ({ data } : any) => {
     const tree = buildFolderTree(data.repo_tree);
 
     return (

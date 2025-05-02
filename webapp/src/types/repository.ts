@@ -112,3 +112,24 @@ export interface ComponentDetails {
   loading: boolean;
   error: string | null;
 }
+
+
+export type RepositoryData = {
+  status: string;
+  narrative: string;
+  analysis_details: AnalysisDetails;
+  task_id: string;
+  repo_tree: RepoTreeItem[];
+  file_type_distribution: Record<string, number>;
+  title: string;
+  repo_info: RepoInfo;
+  detected_frameworks: string[];
+};
+
+
+type AnalysisDetails = {
+  repo_url: string;
+  source: string;
+  latest_commit: LatestCommit;
+  code_analysis: CodeAnalysis;
+};

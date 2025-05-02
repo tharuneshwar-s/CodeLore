@@ -8,7 +8,7 @@ interface AnalysisTabProps {
   handleDetailsToggle: (event: React.SyntheticEvent, name: string, type: 'class' | 'function') => void;
 }
 
-const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionDetails, handleDetailsToggle }) => {
+const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionDetails, handleDetailsToggle }: any) => {
   // Get top classes and functions for display
   const classesData = data.analysis_details.code_analysis.unique_classes.slice(0, 10);
   const functionsData = data.analysis_details.code_analysis.unique_functions.slice(0, 10);

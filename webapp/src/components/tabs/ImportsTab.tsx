@@ -6,7 +6,7 @@ interface ImportsTabProps {
     data: RepositoryData;
 }
 
-const ImportsTab: React.FC<ImportsTabProps> = ({ data }) => {
+const ImportsTab: React.FC<ImportsTabProps> = ({ data }: any) => {
     return (
         <div className="p-4 md:p-6">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
@@ -30,7 +30,7 @@ const ImportsTab: React.FC<ImportsTabProps> = ({ data }) => {
                         <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 max-h-[500px] overflow-y-auto border border-gray-100 dark:border-gray-700">
                             {data.analysis_details.code_analysis.unique_imports.length > 0 ? (
                                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    {data.analysis_details.code_analysis.unique_imports.map((importItem, index) => (
+                                    {data.analysis_details.code_analysis.unique_imports.map((importItem: any, index: any) => (
                                         <li key={index} className="py-2 px-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center hover:shadow-md transition-shadow duration-200">
                                             <div className="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-md flex items-center justify-center mr-3">
                                                 <svg className="w-4 h-4 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
@@ -61,7 +61,7 @@ const ImportsTab: React.FC<ImportsTabProps> = ({ data }) => {
                         <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
                             {data.detected_frameworks && data.detected_frameworks.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    {data.detected_frameworks.map((framework, index) => (
+                                    {data.detected_frameworks.map((framework: any, index: any) => (
                                         <div key={index} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
                                             <div className="flex items-center">
                                                 <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-md flex items-center justify-center mr-3">

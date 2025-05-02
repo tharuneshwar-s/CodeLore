@@ -12,14 +12,14 @@ interface OverviewTabProps {
   formatDate: (dateString: string) => string;
 }
 
-const OverviewTab: React.FC<OverviewTabProps> = ({ data, formatDate }) => {
+const OverviewTab: React.FC<OverviewTabProps> = ({ data, formatDate } : any) => {
   // Prepare data for PieChart
   const pieData = Object.entries(data.file_type_distribution).map(([type, count]) => ({
     name: type,
     value: count,
   }));
 
-  const totalFiles = Object.values(data.file_type_distribution).reduce((a, b) => a + b, 0);
+  const totalFiles = Object.values(data.file_type_distribution).reduce((a: any, b: any) => a + b, 0);
 
   return (
     <div className="space-y-6 text-white">
@@ -118,8 +118,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ data, formatDate }) => {
             {/* File type distribution bars */}
             <div className="mt-4 space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
               {Object.entries(data.file_type_distribution)
-                .sort((a, b) => b[1] - a[1])
-                .map(([type, count], index) => (
+                .sort((a: any, b: any) => b[1] - a[1])
+                .map(([type, count], index: any) => (
                   <div key={index} className="group hover:bg-gray-50 p-2 rounded transition-colors">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-gray-800 font-medium flex items-center">
