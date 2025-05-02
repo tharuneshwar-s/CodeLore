@@ -1,1 +1,1 @@
-web: uvicorn api.main:app --host 0.0.0.0
+worker: celery -A worker.celery_app worker --concurrency=100 --loglevel=info
