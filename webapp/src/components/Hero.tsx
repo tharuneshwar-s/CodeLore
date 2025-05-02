@@ -20,6 +20,10 @@ export default function Hero() {
       signIn();
       return;
     }
+
+    console.log("\n\n\nprocess.env.NEXT_PUBLIC_API_URL : ",process.env.NEXT_PUBLIC_API_URL )
+    console.log("process.env.NEXT_PUBLIC_APP_URL : ",process.env.NEXT_PUBLIC_APP_URL )
+
     
     setIsLoading(true);
     setErrorMessage('');

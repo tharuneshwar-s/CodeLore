@@ -3,11 +3,16 @@ import Link from 'next/link';
 // import { dummyRepositories } from '@/data/dummyData';
 
 export default function Home() {
+  console.log("\n\n\nprocess.env.NEXT_PUBLIC_API_URL : ",process.env.NEXT_PUBLIC_API_URL )
+  console.log("process.env.NEXT_PUBLIC_APP_URL : ",process.env.NEXT_PUBLIC_APP_URL )
+
+  
   // Get the repositories with analysis for featured section
   // const featuredRepos = dummyRepositories.filter(repo => repo.analysis).slice(0, 3);
 
   return (
     <div>
+      
       <Hero />
       
       {/* Features Section */}
