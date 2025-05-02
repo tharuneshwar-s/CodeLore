@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import supabase from '@/utils/supabase';
 import { Session, User } from '@supabase/supabase-js';
+import { redirect } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
@@ -54,22 +55,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async () => {
     try {
       // Get the current URL's origin in browser environments
-      const baseUrl = typeof window !== 'undefined' 
+      const siteUrl = typeof window !== 'undefined' 
         ? window.location.origin 
         : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
       
-      console.log('Using redirect URL:', `${baseUrl}/auth/callback`);
+      console.log('Using site URL for authentication:', siteUrl);
       
-      // Add an explicit site URL to help Supabase with CORS and redirects
-      await supabase.auth.signInWithOAuth({
+      const {data, error} = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${baseUrl}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
           scopes: 'repo', // Request repository access
-          // Make sure we're explicitly setting the site URL to match the current domain
-          skipBrowserRedirect: false
         }
       });
+
+      if (data.url) {
+        redirect(data.url); // Redirect to GitHub for authentication
+      }
     } catch (error) {
       console.error('Error signing in with GitHub:', error);
     }
