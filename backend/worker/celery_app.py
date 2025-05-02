@@ -25,15 +25,15 @@ print("[WALKTHROUGH] celery_app.py: Celery instance created.")
 sys.stdout.flush()
 
 # Optional: You could explicitly update conf AFTER creation too,
-# but initializing with settings is cleaner.
-# celery.conf.broker_url = settings.CELERY_BROKER_URL
-# celery.conf.result_backend = settings.CELERY_RESULT_BACKEND
+# # but initializing with settings is cleaner.
+# # celery.conf.broker_url = settings.CELERY_BROKER_URL
+# # celery.conf.result_backend = settings.CELERY_RESULT_BACKEND
 
-celery.conf.update(
-    task_track_started=True,
-    worker_concurrency=100,  # Allow up to 100 parallel tasks
-    # Add other configs if needed
-)
+# celery.conf.update(
+#     task_track_started=True,
+#     worker_concurrency=100,  # Allow up to 100 parallel tasks
+#     # Add other configs if needed
+# )
 print("[WALKTHROUGH] celery_app.py: Celery config updated.")
 sys.stdout.flush()
 
