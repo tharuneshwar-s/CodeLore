@@ -10,6 +10,8 @@ export async function GET(request: Request) {
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/'
 
+  alert(`Auth callback URL: ${request.url}`)
+
   if (code) {
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
