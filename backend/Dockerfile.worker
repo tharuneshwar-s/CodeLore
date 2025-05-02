@@ -15,3 +15,4 @@ ENV PYTHONPATH=/app
 
 # Start the Celery worker
 CMD ["celery", "-A", "worker.analysis_task", "worker", "--loglevel=info"]
+

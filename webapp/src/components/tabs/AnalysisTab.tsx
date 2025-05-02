@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { RepositoryData, ComponentDetails } from '@/types/repository';
+import {  ComponentDetails } from '@/types/repository';
 
 interface AnalysisTabProps {
-  data: RepositoryData;
+  data: any;
   classDetails: Record<string, ComponentDetails>;
   functionDetails: Record<string, ComponentDetails>;
   handleDetailsToggle: (event: React.SyntheticEvent, name: string, type: 'class' | 'function') => void;
@@ -26,7 +26,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionD
               <div className="bg-gray-50 rounded-lg p-4">
                 {classesData.length > 0 ? (
                   <div className="divide-y divide-gray-200">
-                    {classesData.map((className, index) => (
+                    {classesData.map((className : any, index : any) => (
                       <div key={index} className="py-3">
                         <details
                           className="group"
@@ -149,7 +149,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionD
               <div className="bg-gray-50 rounded-lg p-4">
                 {functionsData.length > 0 ? (
                   <div className="divide-y divide-gray-200">
-                    {functionsData.map((functionName, index) => (
+                    {functionsData.map((functionName : any, index : any) => (
                       <div key={index} className="py-3">
                         <details
                           className="group"
