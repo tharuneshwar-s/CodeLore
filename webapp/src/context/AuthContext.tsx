@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         origin = process.env.NEXT_PUBLIC_APP_URL || '';
       }
       
-      console.log('Using site URL for authentication:', origin);
+      // console.log('Using site URL for authentication:', origin);
       
       // Make sure origin is not empty
       if (!origin) {
