@@ -18,8 +18,8 @@ export default function Hero() {
     // Check if user is authenticated, if not redirect to auth flow
     if (!user) {
       signIn();
-      redirect('https://codelore.vercel.app')
-      // return;
+      window.location.href = 'https://codelore.vercel.app';
+      return;
     }
 
     console.log("\n\n\nprocess.env.NEXT_PUBLIC_API_URL : ",process.env.NEXT_PUBLIC_API_URL )
