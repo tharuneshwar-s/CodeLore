@@ -74,7 +74,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ data, classDetails, functionD
                                 {/* Usage patterns */}
                                 <h4 className="font-medium text-gray-900 mb-1">Usage in codebase</h4>
                                 <ul className="list-disc pl-4 space-y-1 text-sm mb-3">
-                                  {classDetails[className]?.usages.map((usage, usageIndex) => (
+                                  {classDetails[className]?.usages.map((usage:any, usageIndex:any) => (
                                     <li key={usageIndex} dangerouslySetInnerHTML={{ __html: usage }}></li>
                                   ))}
                                 </ul>
