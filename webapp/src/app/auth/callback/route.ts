@@ -24,13 +24,13 @@ export async function GET(request: Request) {
         // This ensures the redirect stays on the current deployment URL, not localhost
         if (isLocalEnv) {
           // Local development - use the origin directly
-          return NextResponse.redirect(`https://codelore.vercel.app`)
+          return NextResponse.redirect(`https://codelore.vercel.app/`)
         } else if (forwardedHost) {
           // Production with forwarded host header (from load balancer/proxy)
-          return NextResponse.redirect(`https://${forwardedHost}${next}`)
+          return NextResponse.redirect(`https://codelore.vercel.app/`)
         } else {
           // Production without forwarded host
-          return NextResponse.redirect(`${origin}${next}`)
+          return NextResponse.redirect(`https://codelore.vercel.app/`)
         }
       } else {
         console.error('Error exchanging code for session:', error)
